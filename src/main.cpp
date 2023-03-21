@@ -18,23 +18,31 @@ limitations under the License.
 */
 
 #include "main.h"
+#include <fstream>
 
 using namespace std;
 
 int main(int argc, char* argv[]) {
-    int n = 100000;       // signal length
-    const int fs = 1000;  // sampling frequency
-    float twopi = 2.0 * 3.1415;
+    const float fs = 21.368223;  // sampling frequency
+    float twopi = 2.0 * 3.1415926;
 
     // 3000 frequencies spread logartihmically between 1 and 32 Hz
-    const float f0 = 0.1;
-    const float f1 = 20;
-    const int fn = 3000;
+    const float f0 = 0.66;
+    const float f1 = 3.47;
+    const int fn = 256;
 
     // Define number of threads for multithreaded use
-    const int nthreads = 8;
+    const int nthreads = 1;
 
     // input: n real numbers
+
+    std::ifstream cwt_in_file("../test_data/cwt_in.txt");
+    std::vector<float> cwt_in;
+    float tmp;
+    while (cwt_in_file >> tmp) {
+        cwt_in.push_back(tmp);
+    }
+    int n = cwt_in.size();  // signal length
     std::vector<float> sig(n);
 
     // input: n complex numbers
@@ -45,12 +53,14 @@ int main(int argc, char* argv[]) {
 
     // initialize with 1 Hz cosine wave
     for (auto& el : sig) {
-        el = cos(twopi * ((float)(&el - &sig[0]) / (float)fs));
+        // el = cos(twopi*((float)(&el - &sig[0])/(float)fs));
+        el = cwt_in[&el - &sig[0]];
     }
 
     // initialize with 1 Hz cosine wave
     for (auto& el : sigc) {
-        el = complex<float>(cos(twopi * ((float)(&el - &sigc[0]) / (float)fs)), 0.0f);
+        // el = complex<float>(cos(twopi*((float)(&el - &sigc[0])/(float)fs)), 0.0f);
+        el = complex<float>(cwt_in[&el - &sigc[0]], 0.0f);
     }
 
     // Start timing
@@ -60,7 +70,8 @@ int main(int argc, char* argv[]) {
     Wavelet* wavelet;
 
     // Initialize a Morlet wavelet having sigma=1.0;
-    Morlet morl(1.0f);
+    //  Morlet morl(2.81f);
+    Morlet morl(16.0f);  // -8.0f to 8.0f
     wavelet = &morl;
 
     // Other wavelets are also possible
@@ -82,12 +93,17 @@ int main(int argc, char* argv[]) {
     // Arguments
     // wavelet   - pointer to wavelet object
     // dist      - FCWT_LOGSCALES | FCWT_LINSCALES for logarithmic or linear distribution of scales
-    // across frequency range
-    // fs        - sample frequency
-    // f0        - beginning of frequency range
+    // across frequency range fs        - sample frequency f0        - beginning of frequency range
     // f1        - end of frequency range
     // fn        - number of wavelets to generate across frequency range
-    Scales scs(wavelet, FCWT_LINFREQS, fs, f0, f1, fn);
+    Scales scs(wavelet, FCWT_CENTERFREQS, fs, f0, f1, fn);
+
+    std::ofstream scale_file("scales_me.txt");
+    std::vector<float> scales_me(fn);
+    scs.getScales(scales_me.data(), scales_me.size());
+    for (auto s : scales_me) {
+        scale_file << s << std::endl;
+    }
 
     // Perform a CWT
     // cwt(input, length, output, scales)
@@ -102,12 +118,19 @@ int main(int argc, char* argv[]) {
     // End timing
     auto finish = chrono::high_resolution_clock::now();
 
+    std::ofstream outfile("cwt_out_me.txt");
+    for (int r = 0; r < fn; ++r) {
+        for (int c = 0; c < n; ++c) {
+            outfile << tfm[r * n + c].real() << " ";
+        }
+        outfile << std::endl;
+    }
     // Calculate total duration
     chrono::duration<double> elapsed = finish - start;
 
     cout << "=== fCWT example ===" << endl;
-    cout << "Calculate CWT of a 100k sample sinusodial signal using a [" << f0 << "-" << f1
-         << "] Hz logarithmic frequency range and 3000 wavelets." << endl;
+    cout << "Calculate CWT of a " << n << " sample signal using a [" << f0 << "-" << f1
+         << "] Hz center frequency range and " << fn << " wavelets." << endl;
     cout << "====================" << endl;
     cout << "fCWT finished in " << elapsed.count() << "s" << endl;
 

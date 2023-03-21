@@ -39,7 +39,7 @@ limitations under the License.
 #include "fcwt.h"
 
 Morlet::Morlet(float bandwidth) {
-    four_wavelen = 0.9876f;
+    four_wavelen = 0.9876f;  // not sure the meaning of this
     fb = bandwidth;
     fb2 = 2.0f * fb * fb;
     ifb = 1.0f / fb;
@@ -108,18 +108,26 @@ void Morlet::getWavelet(float scale, complex<float> *pwav, int pn) {
 //================== Scales =====================================//
 //==============================================================//
 
-Scales::Scales(Wavelet *wav, SCALETYPE st, int afs, float af0, float af1, int afn) {
+Scales::Scales(Wavelet *wav, SCALETYPE st, float afs, float af0, float af1, int afn) {
+    fc = 0.8125f;  // fixed for now
     fs = afs;
     scales = (float *)malloc(afn * sizeof(float));
     fourwavl = wav->four_wavelen;
     nscales = afn;
 
-    if (st == SCALETYPE::FCWT_LOGSCALES)
+    switch (st) {
+    case SCALETYPE::FCWT_LOGSCALES:
         calculate_logscale_array(2.0f, wav->four_wavelen, afs, af0, af1, afn);
-    else if (st == SCALETYPE::FCWT_LINSCALES)
+        break;
+    case SCALETYPE::FCWT_LINSCALES:
         calculate_linscale_array(wav->four_wavelen, afs, af0, af1, afn);
-    else
+    case SCALETYPE::FCWT_LINFREQS:
         calculate_linfreq_array(wav->four_wavelen, afs, af0, af1, afn);
+    case SCALETYPE::FCWT_CENTERFREQS:
+        calculate_centerfreq_array(afs, af0, af1, afn);
+    default:
+        break;
+    }
 }
 
 void Scales::getScales(float *pfreqs, int pnf) {
@@ -130,14 +138,14 @@ void Scales::getScales(float *pfreqs, int pnf) {
 
 void Scales::getFrequencies(float *pfreqs, int pnf) {
     for (int i = 0; i < pnf; i++) {
-        pfreqs[i] = ((float)fs) / scales[i];
+        pfreqs[i] = fs / scales[i];
     };
 };
 
 void Scales::calculate_logscale_array(
         float base,
         float four_wavl,
-        int fs,
+        float fs,
         float f0,
         float f1,
         int fn) {
@@ -160,7 +168,7 @@ void Scales::calculate_logscale_array(
     }
 }
 
-void Scales::calculate_linfreq_array(float four_wavl, int fs, float f0, float f1, int fn) {
+void Scales::calculate_linfreq_array(float four_wavl, float fs, float f0, float f1, int fn) {
     float nf0 = f0;
     float nf1 = f1;
     // If a signal has fs=100hz and you want to measure [0.1-50]Hz, you need scales 2 to 1000;
@@ -174,7 +182,29 @@ void Scales::calculate_linfreq_array(float four_wavl, int fs, float f0, float f1
     }
 }
 
-void Scales::calculate_linscale_array(float four_wavl, int fs, float f0, float f1, int fn) {
+template <typename T>
+static std::vector<T> linspace(T start, T stop, int num, bool endpoint = true) {
+    if (num <= 0 || (endpoint && num == 1)) {
+        return {};
+    }
+    std::vector<T> line;
+    line.reserve(num);
+    T step = (stop - start) / (endpoint ? (num - 1) : num);
+    for (int i = 0; i < num; ++i) {
+        line.push_back(start + i * step);
+    }
+    return line;
+}
+
+void Scales::calculate_centerfreq_array(float fs, float f0, float f1, int fn) {
+    auto freq_range = linspace(f0, f1, fn, false);
+    auto f = fc * fs;
+    for (int i = 0; i < fn; ++i) {
+        scales[i] = f / freq_range[i];
+    }
+}
+
+void Scales::calculate_linscale_array(float four_wavl, float fs, float f0, float f1, int fn) {
     float nf0 = f0;
     float nf1 = f1;
     // If a signal has fs=100hz and you want to measure [0.1-50]Hz, you need scales 2 to 1000;
@@ -481,7 +511,7 @@ void FCWT::fft_normalize(complex<float> *out, int size) {
     int nbatch = threads;
     int batchsize = (int)ceil((float)size / ((float)threads));
 
-    //#pragma omp parallel for
+    // #pragma omp parallel for
     for (int i = 0; i < nbatch; i++) {
         int start = batchsize * i;
         int end = min(size, batchsize * (i + 1));

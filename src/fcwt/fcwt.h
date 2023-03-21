@@ -73,7 +73,7 @@ union U256f {
 
 using namespace std;
 
-enum SCALETYPE { FCWT_LINSCALES, FCWT_LOGSCALES, FCWT_LINFREQS };
+enum SCALETYPE { FCWT_LINSCALES, FCWT_LOGSCALES, FCWT_LINFREQS, FCWT_CENTERFREQS };
 
 class Wavelet {
 public:
@@ -119,20 +119,28 @@ private:
 
 class Scales {
 public:
-    FCWT_LIBRARY_API Scales(Wavelet *pwav, SCALETYPE st, int fs, float f0, float f1, int fn);
+    FCWT_LIBRARY_API Scales(Wavelet *pwav, SCALETYPE st, float fs, float f0, float f1, int fn);
 
     void FCWT_LIBRARY_API getScales(float *pfreqs, int pnf);
     void FCWT_LIBRARY_API getFrequencies(float *pfreqs, int pnf);
 
     float *scales;
-    int fs;
+    float fs;
     float fourwavl;
     int nscales;
+    float fc;  // center frequency
 
 private:
-    void calculate_logscale_array(float base, float four_wavl, int fs, float f0, float f1, int fn);
-    void calculate_linscale_array(float four_wavl, int fs, float f0, float f1, int fn);
-    void calculate_linfreq_array(float four_wavl, int fs, float f0, float f1, int fn);
+    void calculate_logscale_array(
+            float base,
+            float four_wavl,
+            float fs,
+            float f0,
+            float f1,
+            int fn);
+    void calculate_linscale_array(float four_wavl, float fs, float f0, float f1, int fn);
+    void calculate_linfreq_array(float four_wavl, float fs, float f0, float f1, int fn);
+    void calculate_centerfreq_array(float fs, float f0, float f1, int fn);
 };
 
 class FCWT {
