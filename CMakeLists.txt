@@ -9,6 +9,7 @@ option(BUILD_SHARED_LIBS "Build shared library?" ON)
 option(USE_OWN_FFTW "Use own FFTW installation?" OFF)
 option(BUILD_BENCHMARK "Build Benchmark?" OFF)
 option(BUILD_MATLAB "Build Matlab mex?" OFF)
+option(FFTW_OMP "" OFF)
 
 if(NOT DEFINED CMAKE_BUILD_TYPE OR NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release CACHE STRING
@@ -45,7 +46,7 @@ endif()
 project(fCWT VERSION 2.0 DESCRIPTION "Highly optimized implementation of the Continuous Wavelet Transform")
 
 # specify the C++ standard
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
@@ -53,13 +54,14 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
 
 if(UNIX)
-	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -mavx -O2")
+	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -O2 -DSINGLE_THREAD")
 elseif(WIN32)
-	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++17 /arch:AVX /O2 /W1")
+	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++14 /O2 /W1")
 endif()
 
 #set cmake linker flags
-link_libraries("-lm -Wl,-no_compact_unwind")
+#link_libraries("-lm -Wl,-no_compact_unwind")
+link_libraries("-lm")
 
 link_directories(${PROJECT_SOURCE_DIR})
 
@@ -292,7 +294,7 @@ if(UNIX)
         endif()
 		target_link_libraries(${fcwt_library_target} PRIVATE ${FFTW_OMP})
 	else()
-        message(SEND_ERROR "Did not find fftw3f_omp (float and multithreaded omp version of FFTW). If you want to use your own FFTW installation, please set USE_OWN_FFTW to ON.")
+        #message(SEND_ERROR "Did not find fftw3f_omp (float and multithreaded omp version of FFTW). If you want to use your own FFTW installation, please set USE_OWN_FFTW to ON.")
 	endif()
 endif()
 
