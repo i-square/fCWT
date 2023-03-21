@@ -23,58 +23,53 @@ limitations under the License.
 #include <string.h>
 #include "../fcwt/fcwt.h"
 
-//The gateway function
-void mexFunction(int nlhs, mxArray *plhs[],
-                 int nrhs, const mxArray *prhs[])
-{
-    if(nrhs != 3) {
-        mexErrMsgIdAndTxt("fCWT:nrhs","Three inputs required. (size, num. of threads, optimization type)");
+// The gateway function
+void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
+    if (nrhs != 3) {
+        mexErrMsgIdAndTxt(
+                "fCWT:nrhs", "Three inputs required. (size, num. of threads, optimization type)");
     }
 
-    if( !mxIsDouble(prhs[0]) ||
-        mxIsComplex(prhs[0]) ||
-        mxGetNumberOfElements(prhs[0]) != 1 ) {
-        mexErrMsgIdAndTxt("fCWT:size:notScalar",
-                        "The maximal size must be a scalar.");
+    if (!mxIsDouble(prhs[0]) || mxIsComplex(prhs[0]) || mxGetNumberOfElements(prhs[0]) != 1) {
+        mexErrMsgIdAndTxt("fCWT:size:notScalar", "The maximal size must be a scalar.");
     }
-    if( !mxIsDouble(prhs[1]) ||
-        mxIsComplex(prhs[1]) ||
-        mxGetNumberOfElements(prhs[1]) != 1 ) {
-        mexErrMsgIdAndTxt("fCWT:nthreads:notScalar",
-                        "Number of threads must be a scalar.");
+    if (!mxIsDouble(prhs[1]) || mxIsComplex(prhs[1]) || mxGetNumberOfElements(prhs[1]) != 1) {
+        mexErrMsgIdAndTxt("fCWT:nthreads:notScalar", "Number of threads must be a scalar.");
     }
-    if ( mxIsChar(prhs[2]) != 1)
-        mexErrMsgIdAndTxt( "fCWT:type:notString",
-                        "Optimization type must be a string.");
-    
+    if (mxIsChar(prhs[2]) != 1)
+        mexErrMsgIdAndTxt("fCWT:type:notString", "Optimization type must be a string.");
+
     int buflen;
     buflen = (mxGetM(prhs[2]) * mxGetN(prhs[2])) + 1;
-    char *opt = (char*)mxCalloc(buflen,sizeof(char));
-    mxGetString(prhs[2],opt,buflen);
-    
+    char *opt = (char *)mxCalloc(buflen, sizeof(char));
+    mxGetString(prhs[2], opt, buflen);
+
     int size = mxGetScalar(prhs[0]);
     int nthreads = mxGetScalar(prhs[1]);
-    
+
     int method = 0;
-    if(!strcmp(opt,"estimate")) {
+    if (!strcmp(opt, "estimate")) {
         method = FFTW_ESTIMATE;
         mexPrintf("Using 'estimate' to calculate plan ");
     }
-    if(!strcmp(opt,"measure")) {
+    if (!strcmp(opt, "measure")) {
         method = FFTW_MEASURE;
         mexPrintf("Using 'measure' to calculate plan ");
     }
-    if(!strcmp(opt,"patient")) {
+    if (!strcmp(opt, "patient")) {
         method = FFTW_PATIENT;
         mexPrintf("Using 'patient' to calculate plan ");
     }
-    if(!strcmp(opt,"exhaustive")) {
+    if (!strcmp(opt, "exhaustive")) {
         method = FFTW_EXHAUSTIVE;
         mexPrintf("Using 'exhaustive' to calculate plan ");
     }
-    
-    mexWarnMsgIdAndTxt("fcwt:nothreads","Threads are currently not supported in Matlab. Using nthreads=1. See Issue #17 on Github.");
-    mexPrintf("using N:%d",size,nthreads);
+
+    mexWarnMsgIdAndTxt(
+            "fcwt:nothreads",
+            "Threads are currently not supported in Matlab. Using nthreads=1. See Issue #17 on "
+            "Github.");
+    mexPrintf("using N:%d", size, nthreads);
 
     Wavelet *wavelet;
     Morlet morl(1.0);
@@ -82,5 +77,5 @@ void mexFunction(int nlhs, mxArray *plhs[],
 
     FCWT fcwt(wavelet, nthreads, true, false);
 
-    fcwt.create_FFT_optimization_plan(size,method);
+    fcwt.create_FFT_optimization_plan(size, method);
 }

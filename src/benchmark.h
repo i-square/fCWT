@@ -31,14 +31,14 @@ limitations under the License.
 #include <thread>
 #include "../libs/fftw3.h"
 #ifdef _WIN32
-    #include <windows.h>
+#include <windows.h>
 #else
-    #include <unistd.h>
-    #include <pthread.h>
+#include <unistd.h>
+#include <pthread.h>
 #endif
 #if defined(__AVX__)
-    #include <immintrin.h>
-    #define AVX
+#include <immintrin.h>
+#define AVX
 #endif
 
 using namespace std;
@@ -47,4 +47,3 @@ using namespace std;
 #include "fcwt/fcwt.h"
 #include "rwave-bench.h"
 #include "wavelib-bench.h"
-
