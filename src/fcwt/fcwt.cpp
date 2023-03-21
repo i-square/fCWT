@@ -198,9 +198,8 @@ static std::vector<T> linspace(T start, T stop, int num, bool endpoint = true) {
 
 void Scales::calculate_centerfreq_array(float fs, float f0, float f1, int fn) {
     auto freq_range = linspace(f0, f1, fn, false);
-    auto f = fc * fs;
     for (int i = 0; i < fn; ++i) {
-        scales[i] = f / freq_range[i];
+        scales[i] = fc / freq_range[i];
     }
 }
 

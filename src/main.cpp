@@ -27,8 +27,8 @@ int main(int argc, char* argv[]) {
     float twopi = 2.0 * 3.1415926;
 
     // 3000 frequencies spread logartihmically between 1 and 32 Hz
-    const float f0 = 0.66;
-    const float f1 = 3.47;
+    const float f0 = 0.66 / fs;
+    const float f1 = 3.47 / fs;
     const int fn = 256;
 
     // Define number of threads for multithreaded use
