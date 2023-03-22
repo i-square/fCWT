@@ -85,7 +85,7 @@ int main(int argc, char* argv[]) {
     // wavelet   - pointer to wavelet object
     // nthreads  - number of threads to use
     // optplan   - use FFTW optimization plans if true
-    FCWT fcwt(wavelet, nthreads, true, false);
+    FCWT fcwt(wavelet, nthreads, false, false);
 
     // Generate frequencies
     // constructor(wavelet, dist, fs, f0, f1, fn)

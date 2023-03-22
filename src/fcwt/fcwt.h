@@ -71,7 +71,9 @@ union U256f {
 #define sqrt2PI 2.50662827463100050241576528f
 #define IPI4 0.75112554446f
 
-using namespace std;
+using std::complex;
+using std::max;
+using std::min;
 
 enum SCALETYPE { FCWT_LINSCALES, FCWT_LOGSCALES, FCWT_LINFREQS, FCWT_CENTERFREQS };
 
@@ -156,7 +158,8 @@ public:
               use_normalization(puse_normalization){};
 
     void FCWT_LIBRARY_API create_FFT_optimization_plan(int pmaxsize, int poptimizationflags);
-    void FCWT_LIBRARY_API create_FFT_optimization_plan(int pmaxsize, string poptimizationflags);
+    void FCWT_LIBRARY_API
+    create_FFT_optimization_plan(int pmaxsize, std::string poptimizationflags);
     void FCWT_LIBRARY_API cwt(float *pinput, int psize, complex<float> *poutput, Scales *scales);
     void FCWT_LIBRARY_API
     cwt(complex<float> *pinput, int psize, complex<float> *poutput, Scales *scales);

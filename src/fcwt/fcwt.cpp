@@ -391,7 +391,7 @@ void FCWT::create_FFT_optimization_plan(int maxsize, int flags) {
                   << std::endl;
     }
 }
-void FCWT::create_FFT_optimization_plan(int maxsize, string flags) {
+void FCWT::create_FFT_optimization_plan(int maxsize, std::string flags) {
     int flag = 0;
 
     if (flags == "FFTW_MEASURE") {
