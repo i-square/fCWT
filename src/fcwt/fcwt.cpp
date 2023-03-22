@@ -484,6 +484,20 @@ void FCWT::convolve(
     }
 }
 
+#if defined(__GNUC__) && (__GNUC__ < 5)
+// https://github.com/KabukiStarship/KabukiToolkit/wiki/Fastest-Method-to-Align-Pointers
+inline void *align_kabuki(size_t align, size_t size, void *&ptr, size_t &space) noexcept {
+    // Begin Kabuki Toolkit Implementation
+    intptr_t int_ptr = reinterpret_cast<intptr_t>(ptr), offset = (-int_ptr) & (align - 1);
+    if ((space -= offset) < size) {
+        space += offset;
+        return nullptr;
+    }
+    return reinterpret_cast<void *>(int_ptr + offset);
+    // End Kabuki Toolkit Implementation
+}
+#endif
+
 void FCWT::fftbased(
         fftwf_plan p,
         fftwf_complex *Ihat,
@@ -501,7 +515,11 @@ void FCWT::fftbased(
     daughter_wavelet_multiplication(Ihat, O1, mother, scale, size, imaginary, doublesided);
 
     std::size_t space = 16;
+#if defined(__GNUC__) && (__GNUC__ < 5)
+    align_kabuki(16, sizeof(fftwf_complex), pt, space);
+#else
     std::align(16, sizeof(fftwf_complex), pt, space);
+#endif
 
     fftwf_execute_dft(p, O1, (fftwf_complex *)pt);
 }
