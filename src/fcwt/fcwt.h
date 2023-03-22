@@ -102,6 +102,7 @@ public:
 
 class Morlet : public Wavelet {
 public:
+    FCWT_LIBRARY_API Morlet() = default;
     FCWT_LIBRARY_API Morlet(float bandwidth);  // frequency domain
     ~Morlet() {
         free(mother);
@@ -147,6 +148,7 @@ private:
 
 class FCWT {
 public:
+    FCWT_LIBRARY_API FCWT() = default;
     FCWT_LIBRARY_API FCWT(
             Wavelet *pwav,
             int pthreads,
