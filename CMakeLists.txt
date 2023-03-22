@@ -5,7 +5,7 @@ if (NOT (UNIX OR WIN32))
 endif()
 
 #Build options
-option(BUILD_SHARED_LIBS "Build shared library?" ON)
+option(BUILD_SHARED_LIBS "Build shared library?" OFF)
 option(USE_OWN_FFTW "Use own FFTW installation?" OFF)
 option(BUILD_BENCHMARK "Build Benchmark?" OFF)
 option(BUILD_MATLAB "Build Matlab mex?" OFF)
@@ -101,11 +101,11 @@ set(fcwt_library_target "fCWT")
 if(BUILD_SHARED_LIBS)
     message("Building of shared library is enabled.")
     add_definitions(-DFCWT_LIBRARY_DLL_BUILDING)
+    add_library(${fcwt_library_target} ${libraryheaders} ${librarysources})
 else()
     message("Building of static library is enabled.")
+    add_library(${fcwt_library_target} STATIC ${libraryheaders} ${librarysources})
 endif()
-
-add_library(${fcwt_library_target} ${libraryheaders} ${librarysources})
 
 set_target_properties(${fcwt_library_target}
     PROPERTIES
@@ -140,7 +140,7 @@ if(APPLE)
     set(OpenMP_iomp5_LIBRARY ${OpenMP_C_LIB_NAMES})
 endif()
 
-find_package(OpenMP REQUIRED)
+#find_package(OpenMP REQUIRED)
 if (OPENMP_FOUND)
     if(APPLE)
         target_include_directories(${fcwt_library_target} PUBLIC ${OpenMP_INCLUDES})
@@ -217,7 +217,7 @@ if(NOT USE_OWN_FFTW)
         
         find_library (
             FFTW
-            NAMES fftw3fl # what to look for
+            NAMES fftw3f # what to look for
             HINTS "${PROJECT_SOURCE_DIR}/libs" # where to look
             NO_DEFAULT_PATH # do not search system default paths
             REQUIRED
