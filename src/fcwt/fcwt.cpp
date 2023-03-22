@@ -130,15 +130,15 @@ Scales::Scales(Wavelet *wav, SCALETYPE st, float afs, float af0, float af1, int 
     }
 }
 
-void Scales::getScales(float *pfreqs, int pnf) {
+void Scales::getScales(float *pscales, int pnf) {
     for (int i = 0; i < pnf; i++) {
-        pfreqs[i] = scales[i];
+        pscales[i] = scales[i];
     };
 };
 
 void Scales::getFrequencies(float *pfreqs, int pnf) {
     for (int i = 0; i < pnf; i++) {
-        pfreqs[i] = fs / scales[i];
+        pfreqs[i] = fs * fc / scales[i];
     };
 };
 
